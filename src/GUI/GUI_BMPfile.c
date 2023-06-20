@@ -52,7 +52,6 @@
 
 #include "GUI_BMPfile.h"
 #include "GUI_Paint.h"
-#include "../Debug.h"
 
 #include <fcntl.h>
 #include <unistd.h>
@@ -62,7 +61,7 @@
 #include <math.h> //memset()
 #include <stdio.h>
 
-UBYTE GUI_ReadBmp(const char *path, UWORD Xstart, UWORD Ystart)
+uint8_t GUI_ReadBmp(const char *path, uint16_t Xstart, uint16_t Ystart)
 {
     FILE *fp;                     //Define a file pointer
     BMPFILEHEADER bmpFileHeader;  //Define a bmp file header structure
@@ -71,7 +70,7 @@ UBYTE GUI_ReadBmp(const char *path, UWORD Xstart, UWORD Ystart)
 
     // Binary file open
     if((fp = fopen(path, "rb")) == NULL) {
-        Debug("Cann't open the file!\n");
+        printf("Cann't open the file!\n");
         exit(0);
     }
 
@@ -81,22 +80,22 @@ UBYTE GUI_ReadBmp(const char *path, UWORD Xstart, UWORD Ystart)
     fread(&bmpInfoHeader, sizeof(BMPINFOHEADER), 1, fp);    //sizeof(BMPFILEHEADER) must be 50
     printf("pixel = %d * %d\r\n", bmpInfoHeader.biWidth, bmpInfoHeader.biHeight);
 
-    UWORD Image_Width_Byte = (bmpInfoHeader.biWidth % 8 == 0)? (bmpInfoHeader.biWidth / 8): (bmpInfoHeader.biWidth / 8 + 1);
-    UWORD Bmp_Width_Byte = (Image_Width_Byte % 4 == 0) ? Image_Width_Byte: ((Image_Width_Byte / 4 + 1) * 4);
-    UBYTE Image[Image_Width_Byte * bmpInfoHeader.biHeight];
+    uint16_t Image_Width_Byte = (bmpInfoHeader.biWidth % 8 == 0)? (bmpInfoHeader.biWidth / 8): (bmpInfoHeader.biWidth / 8 + 1);
+    uint16_t Bmp_Width_Byte = (Image_Width_Byte % 4 == 0) ? Image_Width_Byte: ((Image_Width_Byte / 4 + 1) * 4);
+    uint8_t Image[Image_Width_Byte * bmpInfoHeader.biHeight];
     memset(Image, 0xFF, Image_Width_Byte * bmpInfoHeader.biHeight);
 
     // Determine if it is a monochrome bitmap
     int readbyte = bmpInfoHeader.biBitCount;
     if(readbyte != 1) {
-        Debug("the bmp Image is not a monochrome bitmap!\n");
+        printf("the bmp Image is not a monochrome bitmap!\n");
         exit(0);
     }
 
     // Determine black and white based on the palette
-    UWORD i;
-    UWORD Bcolor, Wcolor;
-    UWORD bmprgbquadsize = pow(2, bmpInfoHeader.biBitCount);// 2^1 = 2
+    uint16_t i;
+    uint16_t Bcolor, Wcolor;
+    uint16_t bmprgbquadsize = pow(2, bmpInfoHeader.biBitCount);// 2^1 = 2
     BMPRGBQUAD bmprgbquad[bmprgbquadsize];        //palette
     // BMPRGBQUAD bmprgbquad[2];        //palette
 
@@ -113,8 +112,8 @@ UBYTE GUI_ReadBmp(const char *path, UWORD Xstart, UWORD Ystart)
     }
 
     // Read image data into the cache
-    UWORD x, y;
-    UBYTE Rdata;
+    uint16_t x, y;
+    uint8_t Rdata;
     fseek(fp, bmpFileHeader.bOffset, SEEK_SET);
     for(y = 0; y < bmpInfoHeader.biHeight; y++) {//Total display column
         for(x = 0; x < Bmp_Width_Byte; x++) {//Show a line in the line
@@ -131,7 +130,7 @@ UBYTE GUI_ReadBmp(const char *path, UWORD Xstart, UWORD Ystart)
     fclose(fp);
 
     // Refresh the image to the display buffer based on the displayed orientation
-    UBYTE color, temp;
+    uint8_t color, temp;
     for(y = 0; y < bmpInfoHeader.biHeight; y++) {
         for(x = 0; x < bmpInfoHeader.biWidth; x++) {
             if(x > Paint.Width || y > Paint.Height) {
@@ -147,7 +146,7 @@ UBYTE GUI_ReadBmp(const char *path, UWORD Xstart, UWORD Ystart)
 /*************************************************************************
 
 *************************************************************************/
-UBYTE GUI_ReadBmp_4Gray(const char *path, UWORD Xstart, UWORD Ystart)
+uint8_t GUI_ReadBmp_4Gray(const char *path, uint16_t Xstart, uint16_t Ystart)
 {
     FILE *fp;                     //Define a file pointer
     BMPFILEHEADER bmpFileHeader;  //Define a bmp file header structure
@@ -155,7 +154,7 @@ UBYTE GUI_ReadBmp_4Gray(const char *path, UWORD Xstart, UWORD Ystart)
     
     // Binary file open
     if((fp = fopen(path, "rb")) == NULL) {
-        Debug("Cann't open the file!\n");
+        printf("Cann't open the file!\n");
         exit(0);
     }
 
@@ -165,21 +164,21 @@ UBYTE GUI_ReadBmp_4Gray(const char *path, UWORD Xstart, UWORD Ystart)
     fread(&bmpInfoHeader, sizeof(BMPINFOHEADER), 1, fp);    //sizeof(BMPFILEHEADER) must be 50
     printf("pixel = %d * %d\r\n", bmpInfoHeader.biWidth, bmpInfoHeader.biHeight);
 
-    UWORD Image_Width_Byte = (bmpInfoHeader.biWidth % 4 == 0)? (bmpInfoHeader.biWidth / 4): (bmpInfoHeader.biWidth / 4 + 1);
-    UWORD Bmp_Width_Byte = (bmpInfoHeader.biWidth % 2 == 0)? (bmpInfoHeader.biWidth / 2): (bmpInfoHeader.biWidth / 2 + 1);
-    UBYTE Image[Image_Width_Byte * bmpInfoHeader.biHeight * 2];
+    uint16_t Image_Width_Byte = (bmpInfoHeader.biWidth % 4 == 0)? (bmpInfoHeader.biWidth / 4): (bmpInfoHeader.biWidth / 4 + 1);
+    uint16_t Bmp_Width_Byte = (bmpInfoHeader.biWidth % 2 == 0)? (bmpInfoHeader.biWidth / 2): (bmpInfoHeader.biWidth / 2 + 1);
+    uint8_t Image[Image_Width_Byte * bmpInfoHeader.biHeight * 2];
     memset(Image, 0xFF, Image_Width_Byte * bmpInfoHeader.biHeight * 2);
 
     // Determine if it is a monochrome bitmap
     int readbyte = bmpInfoHeader.biBitCount;
     printf("biBitCount = %d\r\n",readbyte);
     if(readbyte != 4){
-        Debug("Bmp image is not a 4-color bitmap!\n");
+        printf("Bmp image is not a 4-color bitmap!\n");
         exit(0);
     }
     // Read image data into the cache
-    UWORD x, y;
-    UBYTE Rdata;
+    uint16_t x, y;
+    uint8_t Rdata;
     fseek(fp, bmpFileHeader.bOffset, SEEK_SET);
     
     for(y = 0; y < bmpInfoHeader.biHeight; y++) {//Total display column
@@ -196,7 +195,7 @@ UBYTE GUI_ReadBmp_4Gray(const char *path, UWORD Xstart, UWORD Ystart)
     fclose(fp);
     
     // Refresh the image to the display buffer based on the displayed orientation
-    UBYTE color, temp;
+    uint8_t color, temp;
     printf("bmpInfoHeader.biWidth = %d\r\n",bmpInfoHeader.biWidth);
     printf("bmpInfoHeader.biHeight = %d\r\n",bmpInfoHeader.biHeight);
     for(y = 0; y < bmpInfoHeader.biHeight; y++) {
@@ -212,7 +211,7 @@ UBYTE GUI_ReadBmp_4Gray(const char *path, UWORD Xstart, UWORD Ystart)
     return 0;
 }
 
-UBYTE GUI_ReadBmp_16Gray(const char *path, UWORD Xstart, UWORD Ystart)
+uint8_t GUI_ReadBmp_16Gray(const char *path, uint16_t Xstart, uint16_t Ystart)
 {
     FILE *fp;                     //Define a file pointer
     BMPFILEHEADER bmpFileHeader;  //Define a bmp file header structure
@@ -220,7 +219,7 @@ UBYTE GUI_ReadBmp_16Gray(const char *path, UWORD Xstart, UWORD Ystart)
     
     // Binary file open
     if((fp = fopen(path, "rb")) == NULL) {
-        Debug("Cann't open the file!\n");
+        printf("Cann't open the file!\n");
         exit(0);
     }
 
@@ -230,21 +229,21 @@ UBYTE GUI_ReadBmp_16Gray(const char *path, UWORD Xstart, UWORD Ystart)
     fread(&bmpInfoHeader, sizeof(BMPINFOHEADER), 1, fp);    //sizeof(BMPFILEHEADER) must be 50
     printf("pixel = %d * %d\r\n", bmpInfoHeader.biWidth, bmpInfoHeader.biHeight);
 
-    UWORD Image_Width_Byte = (bmpInfoHeader.biWidth % 2 == 0)? (bmpInfoHeader.biWidth / 2): (bmpInfoHeader.biWidth / 4 + 1);
-    UWORD Bmp_Width_Byte = (bmpInfoHeader.biWidth % 2 == 0)? (bmpInfoHeader.biWidth / 2): (bmpInfoHeader.biWidth / 2 + 1);
-    UBYTE Image[Image_Width_Byte * bmpInfoHeader.biHeight * 2];
+    uint16_t Image_Width_Byte = (bmpInfoHeader.biWidth % 2 == 0)? (bmpInfoHeader.biWidth / 2): (bmpInfoHeader.biWidth / 4 + 1);
+    uint16_t Bmp_Width_Byte = (bmpInfoHeader.biWidth % 2 == 0)? (bmpInfoHeader.biWidth / 2): (bmpInfoHeader.biWidth / 2 + 1);
+    uint8_t Image[Image_Width_Byte * bmpInfoHeader.biHeight * 2];
     memset(Image, 0xFF, Image_Width_Byte * bmpInfoHeader.biHeight * 2);
 
     // Determine if it is a monochrome bitmap
     int readbyte = bmpInfoHeader.biBitCount;
     printf("biBitCount = %d\r\n",readbyte);
     if(readbyte != 4){
-        Debug("Bmp image is not a 16-color bitmap!\n");
+        printf("Bmp image is not a 16-color bitmap!\n");
         exit(0);
     }
     // Read image data into the cache
-    UWORD x, y;
-    UBYTE Rdata;
+    uint16_t x, y;
+    uint8_t Rdata;
     fseek(fp, bmpFileHeader.bOffset, SEEK_SET);
     
     for(y = 0; y < bmpInfoHeader.biHeight; y++) {//Total display column
@@ -259,7 +258,7 @@ UBYTE GUI_ReadBmp_16Gray(const char *path, UWORD Xstart, UWORD Ystart)
     fclose(fp);
     
     // Refresh the image to the display buffer based on the displayed orientation
-    UBYTE color;
+    uint8_t color;
     printf("bmpInfoHeader.biWidth = %d\r\n",bmpInfoHeader.biWidth);
     printf("bmpInfoHeader.biHeight = %d\r\n",bmpInfoHeader.biHeight);
     for(y = 0; y < bmpInfoHeader.biHeight; y++) {
@@ -275,7 +274,7 @@ UBYTE GUI_ReadBmp_16Gray(const char *path, UWORD Xstart, UWORD Ystart)
     return 0;
 }
 
-UBYTE GUI_ReadBmp_65K(const char *path, UWORD Xstart, UWORD Ystart)
+uint8_t GUI_ReadBmp_65K(const char *path, uint16_t Xstart, uint16_t Ystart)
 {
     FILE *fp;                     //Define a file pointer
     BMPFILEHEADER bmpFileHeader;  //Define a bmp file header structure
@@ -283,7 +282,7 @@ UBYTE GUI_ReadBmp_65K(const char *path, UWORD Xstart, UWORD Ystart)
     
     // Binary file open
     if((fp = fopen(path, "rb")) == NULL) {
-        Debug("Cann't open the file!\n");
+        printf("Cann't open the file!\n");
         exit(0);
     }
 
@@ -293,21 +292,21 @@ UBYTE GUI_ReadBmp_65K(const char *path, UWORD Xstart, UWORD Ystart)
     fread(&bmpInfoHeader, sizeof(BMPINFOHEADER), 1, fp);    //sizeof(BMPFILEHEADER) must be 50
     printf("pixel = %d * %d\r\n", bmpInfoHeader.biWidth, bmpInfoHeader.biHeight);
 
-    UWORD Image_Width_Byte = bmpInfoHeader.biWidth * 2;
-    UWORD Bmp_Width_Byte = bmpInfoHeader.biWidth * 2;
-    UBYTE Image[Image_Width_Byte * bmpInfoHeader.biHeight];
+    uint16_t Image_Width_Byte = bmpInfoHeader.biWidth * 2;
+    uint16_t Bmp_Width_Byte = bmpInfoHeader.biWidth * 2;
+    uint8_t Image[Image_Width_Byte * bmpInfoHeader.biHeight];
     memset(Image, 0xFF, Image_Width_Byte * bmpInfoHeader.biHeight);
 
     // Determine if it is a monochrome bitmap
     int readbyte = bmpInfoHeader.biBitCount;
     printf("biBitCount = %d\r\n",readbyte);
     if(readbyte != 16){
-        Debug("Bmp image is not a 65K-color bitmap!\n");
+        printf("Bmp image is not a 65K-color bitmap!\n");
         exit(0);
     }
     // Read image data into the cache
-    UWORD x, y;
-    UBYTE Rdata;
+    uint16_t x, y;
+    uint8_t Rdata;
     fseek(fp, bmpFileHeader.bOffset, SEEK_SET);
     
     for(y = 0; y < bmpInfoHeader.biHeight; y++) {//Total display column
@@ -322,7 +321,7 @@ UBYTE GUI_ReadBmp_65K(const char *path, UWORD Xstart, UWORD Ystart)
     fclose(fp);
     
     // Refresh the image to the display buffer based on the displayed orientation
-    UWORD color;
+    uint16_t color;
     printf("bmpInfoHeader.biWidth = %d\r\n",bmpInfoHeader.biWidth);
     printf("bmpInfoHeader.biHeight = %d\r\n",bmpInfoHeader.biHeight);
     for(y = 0; y < bmpInfoHeader.biHeight; y++) {
@@ -339,7 +338,7 @@ UBYTE GUI_ReadBmp_65K(const char *path, UWORD Xstart, UWORD Ystart)
     return 0;
 }
 
-UBYTE GUI_ReadBmp_RGB_7Color(const char *path, UWORD Xstart, UWORD Ystart)
+uint8_t GUI_ReadBmp_RGB_7Color(const char *path, uint16_t Xstart, uint16_t Ystart)
 {
     FILE *fp;                     //Define a file pointer
     BMPFILEHEADER bmpFileHeader;  //Define a bmp file header structure
@@ -347,7 +346,7 @@ UBYTE GUI_ReadBmp_RGB_7Color(const char *path, UWORD Xstart, UWORD Ystart)
     
     // Binary file open
     if((fp = fopen(path, "rb")) == NULL) {
-        Debug("Cann't open the file!\n");
+        printf("Cann't open the file!\n");
         exit(0);
     }
 
@@ -357,19 +356,19 @@ UBYTE GUI_ReadBmp_RGB_7Color(const char *path, UWORD Xstart, UWORD Ystart)
     fread(&bmpInfoHeader, sizeof(BMPINFOHEADER), 1, fp);    //sizeof(BMPFILEHEADER) must be 50
     printf("pixel = %d * %d\r\n", bmpInfoHeader.biWidth, bmpInfoHeader.biHeight);
 	
-    UDOUBLE Image_Byte = bmpInfoHeader.biWidth * bmpInfoHeader.biHeight * 3;
-    UBYTE Image[Image_Byte];
+    uint32_t Image_Byte = bmpInfoHeader.biWidth * bmpInfoHeader.biHeight * 3;
+    uint8_t Image[Image_Byte];
     memset(Image, 0xFF, Image_Byte);
 
     // Determine if it is a monochrome bitmap
     int readbyte = bmpInfoHeader.biBitCount;
     if(readbyte != 24){
-        Debug("Bmp image is not 24 bitmap!\n");
+        printf("Bmp image is not 24 bitmap!\n");
         exit(0);
     }
     // Read image data into the cache
-    UWORD x, y;
-    UBYTE Rdata[3];
+    uint16_t x, y;
+    uint8_t Rdata[3];
     fseek(fp, bmpFileHeader.bOffset, SEEK_SET);
     
     for(y = 0; y < bmpInfoHeader.biHeight; y++) {//Total display column
