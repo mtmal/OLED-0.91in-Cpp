@@ -64,7 +64,7 @@ void populateImage3(uint8_t* image)
 	GUI_ReadBmp("../pic/0in91.bmp", 0, 0);
 }
 
-int main(int argc, char *argv[])
+int main()
 {
 	OLED_0in91 oled;
 	puts("0.91inch OLED test demo");
